@@ -6,17 +6,17 @@ const app = express();
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('✅ Conectado exitosamente a MongoDB Atlas'))
-.catch(err => console.error('❌ Error de conexión:', err));
+  .then(() => console.log('Conectado a MongoDB Atlas'))
+  .catch(err => console.error('Error de conexión:', err));
 
 const empleadoSchema = new mongoose.Schema({
   clave: { type: Number, required: true, unique: true },
   nombre: { type: String, required: true },
   direccion: { type: String, required: true },
   fechadenacimiento: { type: Date, required: true },
-  sexo: { type: mongoose.Schema.Types.Mixed, required: true }, // Acepta numérico o texto
+  sexo: { type: String, required: true },
   tipodesangre: { type: String, required: true }
-});
+}, { versionKey: false });
 
 const Empleado = mongoose.model('Empleado', empleadoSchema, 'Empleados');
 
@@ -31,7 +31,7 @@ app.get('/api/empleados', async (req, res) => {
 
 app.get('/api/empleados/:clave', async (req, res) => {
   try {
-    const empleado = await Empleado.findOne({ clave: req.params.clave });
+    const empleado = await Empleado.findOne({ clave: Number(req.params.clave) });
     if (!empleado) return res.status(404).json({ mensaje: 'Empleado no encontrado' });
     res.json(empleado);
   } catch (error) {
@@ -52,7 +52,7 @@ app.post('/api/empleados', async (req, res) => {
 app.put('/api/empleados/:clave', async (req, res) => {
   try {
     const actualizado = await Empleado.findOneAndUpdate(
-      { clave: req.params.clave },
+      { clave: Number(req.params.clave) },
       req.body,
       { new: true, runValidators: true }
     );
@@ -65,7 +65,7 @@ app.put('/api/empleados/:clave', async (req, res) => {
 
 app.delete('/api/empleados/:clave', async (req, res) => {
   try {
-    const eliminado = await Empleado.findOneAndDelete({ clave: req.params.clave });
+    const eliminado = await Empleado.findOneAndDelete({ clave: Number(req.params.clave) });
     if (!eliminado) return res.status(404).json({ mensaje: 'Empleado no encontrado' });
     res.json({ mensaje: 'Empleado eliminado exitosamente', eliminado });
   } catch (error) {
@@ -73,5 +73,5 @@ app.delete('/api/empleados/:clave', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
